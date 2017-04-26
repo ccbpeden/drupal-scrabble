@@ -1,0 +1,29 @@
+<?php
+
+function create_tiles_menu() {
+    $items['createtiles'] = array(
+        'title' => 'Create Tiles',
+        'page callback' => 'test',
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+    );
+    return $items;
+}
+
+function test() {
+    return '<p>works</p>';
+}
+
+// function tile_generation(&$edit, $account, $category) {
+//     $node = new stdClass();
+//     $node->type = 'Board Tile';
+//     node_object_prepare($node);
+//     $node->language = LANGUAGE_NONE;
+//     $node->title = 'A1';
+//     $node->field_board_x_coordinate = 'A';
+//     $node->field_board_y_coordinate = 1;
+//     $node->field_multiple_value = 1;
+//     $node->field_multiple_target = 'none';
+//     $node->uid = $account->uid;
+//     node_save($node);
+// }

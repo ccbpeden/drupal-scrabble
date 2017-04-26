@@ -1,0 +1,5 @@
+name = Auto-create board tiles
+description = Programmatically create board tiles for scrabble.
+package = Custom Modules
+core = 7.x
+files[] = autocreate_boardtiles.module
