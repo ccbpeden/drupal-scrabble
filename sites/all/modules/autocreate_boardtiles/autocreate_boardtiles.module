@@ -13,24 +13,63 @@ function autocreate_boardtiles_menu() {
 
 
 function tile_generation() {
-    $lettersArray = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O');
-    $tripleword = ['A1', 'H1', 'O1'];
+    $double_letter = ['D1', 'L1', 'G3', 'I3', 'A4', 'H4', 'O4', 'C7', 'G7', 'I7', 'M7', 'D8', 'L8', 'C9', 'G9', 'I9', 'M9', 'A12', 'H12', 'O12', 'G13', 'I13', 'D15', 'L15'];
+    $double_word = ['B2', 'N2', 'C3', 'M3', 'D4', 'L4', 'E5', 'K5', 'H8', 'E11', 'K11', 'D12', 'L12', 'C13', 'M13', 'B14', 'N14'];
+    $letters_array = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O');
+    $triple_word = ['A1', 'H1', 'O1', 'A8', 'O8', 'A15', 'H15', 'O15'];
+    $triple_letter = ['F2', 'J2', 'B6', 'F6', 'J6', 'N6', 'B10', 'F10', 'J10', 'N10', 'F14', 'J14'];
+    for ($i = 0; $i< count($letters_array); $i++) {
+        for ($j=1; $j <= 15; $j++) {
+            $node = new stdClass();
+            $node->type = 'board';
+            node_object_prepare($node);
+            $node->language = LANGUAGE_NONE;
+            $node->field_board_x_coordinate['und'][0]['value'] = $letters_array[$i];
+            $node->field_board_y_coordinate['und'][0]['value'] = $j;
+            $node->title = $letters_array[$i].(string)$j;
+            if (in_array($node->title, $triple_word)) {
+                $node->field_multiple_value['und'][0]['value'] = 3;
+                $node->field_multiple_target['und'][0]['value'] = 'word';
 
-    // for ($i = 0; $i< count($lettersArray); $i++) {
-    //     for ($j=1; $j <= 15; $j++) {
-    //         stuffgeneration
-    //         if (title == )
-    //     }
-    // }
-    $node = new stdClass();
-    $node->type = 'board';
-    node_object_prepare($node);
-    $node->language = LANGUAGE_NONE;
-    $node->title = 'A1';
-    $node->board_x_coordinate = 'A';
-    $node->board_y_coordinate = 1;
-    $node->multiple_value = 1;
-    $node->multiple_target = 'none';
-    // $node->uid = $account->uid;
-    node_save($node);
+                $imagename = 'triple_word_tile.jpg';
+                $image = file_get_contents('./sites/images/triple_word_tile.jpg');
+                $file = file_save_data($image, 'public://' . $imagename, FILE_EXISTS_REPLACE);
+                $node->field_default_image = array(LANGUAGE_NONE => array('0' => (array)$file));
+
+            } elseif (in_array($node->title, $triple_letter)) {
+                $node->field_multiple_value['und'][0]['value'] = 3;
+                $node->field_multiple_target['und'][0]['value'] = 'letter';
+
+                $imagename = 'triple_letter_tile.jpg';
+                $image = file_get_contents('./sites/images/triple_letter_tile.jpg');
+                $file = file_save_data($image, 'public://' . $imagename, FILE_EXISTS_REPLACE);
+                $node->field_default_image = array(LANGUAGE_NONE => array('0' => (array)$file));
+            } elseif (in_array($node->title, $double_word)) {
+                $node->field_multiple_value['und'][0]['value'] = 2;
+                $node->field_multiple_target['und'][0]['value'] = 'word';
+
+                $imagename = 'double_word_tile.jpg';
+                $image = file_get_contents('./sites/images/double_word_tile.jpg');
+                $file = file_save_data($image, 'public://' . $imagename, FILE_EXISTS_REPLACE);
+                $node->field_default_image = array(LANGUAGE_NONE => array('0' => (array)$file));
+            } elseif (in_array($node->title, $double_letter)) {
+                $node->field_multiple_value['und'][0]['value'] = 2;
+                $node->field_multiple_target['und'][0]['value'] = 'letter';
+
+                $imagename = 'double_letter_tile.jpg';
+                $image = file_get_contents('./sites/images/double_letter_tile.jpg');
+                $file = file_save_data($image, 'public://' . $imagename, FILE_EXISTS_REPLACE);
+                $node->field_default_image = array(LANGUAGE_NONE => array('0' => (array)$file));
+            } else {
+                $node->field_multiple_value['und'][0]['value'] = 1;
+                $node->field_multiple_target['und'][0]['value'] = 'none';
+
+                $imagename = 'empty_board_tile.jpg';
+                $image = file_get_contents('./sites/images/empty_board_tile.jpg');
+                $file = file_save_data($image, 'public://' . $imagename, FILE_EXISTS_REPLACE);
+                $node->field_default_image = array(LANGUAGE_NONE => array('0' => (array)$file));
+            }
+            node_save($node);
+        }
+    }
 }
