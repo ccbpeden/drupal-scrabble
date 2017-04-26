@@ -1,29 +1,36 @@
 <?php
 
-function create_tiles_menu() {
+function autocreate_boardtiles_menu() {
     $items['createtiles'] = array(
         'title' => 'Create Tiles',
-        'page callback' => 'test',
+        'page callback' => 'tile_generation',
+        // 'page arguments' => array($account, $category),
         'access callback' => TRUE,
         'type' => MENU_NORMAL_ITEM,
     );
     return $items;
 }
 
-function test() {
-    return '<p>works</p>';
-}
 
-// function tile_generation(&$edit, $account, $category) {
-//     $node = new stdClass();
-//     $node->type = 'Board Tile';
-//     node_object_prepare($node);
-//     $node->language = LANGUAGE_NONE;
-//     $node->title = 'A1';
-//     $node->field_board_x_coordinate = 'A';
-//     $node->field_board_y_coordinate = 1;
-//     $node->field_multiple_value = 1;
-//     $node->field_multiple_target = 'none';
-//     $node->uid = $account->uid;
-//     node_save($node);
-// }
+function tile_generation() {
+    $lettersArray = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O');
+    $tripleword = ['A1', 'H1', 'O1'];
+
+    // for ($i = 0; $i< count($lettersArray); $i++) {
+    //     for ($j=1; $j <= 15; $j++) {
+    //         stuffgeneration
+    //         if (title == )
+    //     }
+    // }
+    $node = new stdClass();
+    $node->type = 'board';
+    node_object_prepare($node);
+    $node->language = LANGUAGE_NONE;
+    $node->title = 'A1';
+    $node->board_x_coordinate = 'A';
+    $node->board_y_coordinate = 1;
+    $node->multiple_value = 1;
+    $node->multiple_target = 'none';
+    // $node->uid = $account->uid;
+    node_save($node);
+}
