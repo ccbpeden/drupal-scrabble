@@ -1,0 +1,5 @@
+name = Autocreate Player Tiles
+description = a module for the creation of a standard english set of scrabble play Tiles
+package = Custom Modules
+core = 7.x
+files[] = autocreate_player_tiles.module

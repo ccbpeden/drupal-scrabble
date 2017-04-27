@@ -1,0 +1,36 @@
+<?php
+
+function autocreate_player_tiles_menu() {
+    $items['createtiles'] = array(
+        'title' => 'Create Tiles',
+        'page callback' => 'tile_generation',
+        // 'page arguments' => array($account, $category),
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+    );
+    return $items;
+}
+
+
+function tile_generation() {
+
+    $letters_array = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'blank_play');
+    $quantity_array = array(9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1, 2);
+    $score_array = array(1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10, 0);
+
+    for ($i = 0; $i< count($letters_array); $i++) {
+        for($j = 0; $j < $quantity_array[$i]; $j++){
+            $node = new stdClass();
+            $node->type = 'board_tile';
+            node_object_prepare($node);
+            $node->language = LANGUAGE_NONE;
+            $node->title = $letters_array[$i];
+            $node->field_score_value['und'][0]['value'] =  $score_array[$i];
+            $imagename = $letters_array[$i].'.png';
+            $image = file_get_contents('./sites/images/'.$imagename);
+            $file = file_save_data($image, 'public://' . $imagename, FILE_EXISTS_REPLACE);
+            $node->field_letter_image = array(LANGUAGE_NONE => array('0' => (array)$file));
+            node_save($node);
+        }
+    }
+}
