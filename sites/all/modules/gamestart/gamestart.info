@@ -1,0 +1,5 @@
+name = Game Start
+description = A module to initialize the Scrabble game.
+package = Custom Modules
+core = 7.x
+files[] = gamestart.module

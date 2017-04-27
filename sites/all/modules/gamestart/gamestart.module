@@ -1,0 +1,25 @@
+<?php
+    function gamestart_menu() {
+        $items['start_game'] = array(
+            'title' => 'Scrabble Game Start',
+            'page callback' => 'initialize',
+            'access callback' => TRUE,
+            'type' => MENU_NORMAL_ITEM,
+        );
+        return $items;
+    }
+
+    function initialize() {
+        $query = db_select('node', 'n')
+            ->Fields('N', array('nid', 'title'))
+            ->condition('type', 'board');
+        $result = $query->execute();
+        foreach($result as $record) {
+            $node = node_load($record->nid);
+            $node->field_played_letter[$node->language][0]['value'] = '';
+            $node->revision = 1;
+            $node->log = 'This node was programmatically updated on ' . date('c');
+            node_save($node);
+        }
+    return "You may have updated some values";
+    }
