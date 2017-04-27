@@ -97,7 +97,20 @@
             $node->field_belongs_to['und'][0]['value'] = 'Player 1';
             $node->field_y_coordinate['und'][0]['value'] = null;
             node_save($node);
+
         }
+        $player1_nid = 2917;
+        $player_node = node_load($player1_nid);
+        $player_node->field_tile1[$node->language][0]['value'] = $player1_tiles[0]->title;
+        $player_node->field_tile2[$node->language][0]['value'] = $player1_tiles[1]->title;
+        $player_node->field_tile3[$node->language][0]['value'] = $player1_tiles[2]->title;
+        $player_node->field_tile4[$node->language][0]['value'] = $player1_tiles[3]->title;
+        $player_node->field_tile5[$node->language][0]['value'] = $player1_tiles[4]->title;
+        $player_node->field_tile6[$node->language][0]['value'] = $player1_tiles[5]->title;
+        $player_node->field_tile7[$node->language][0]['value'] = $player1_tiles[6]->title;
+        node_save($player_node);
+
+
         for($j = 0; $j < count($player2_tiles); $j++){
             $nid = $player2_tiles[$j]->nid;
             $node = node_load($nid);
@@ -105,6 +118,18 @@
             $node->field_y_coordinate['und'][0]['value'] = null;
             node_save($node);
         }
+
+        $player2_nid = 2918;
+        $player_node = node_load($player2_nid);
+        $player_node->field_tile1[$node->language][0]['value'] = $player2_tiles[0]->title;
+        $player_node->field_tile2[$node->language][0]['value'] = $player2_tiles[1]->title;
+        $player_node->field_tile3[$node->language][0]['value'] = $player2_tiles[2]->title;
+        $player_node->field_tile4[$node->language][0]['value'] = $player2_tiles[3]->title;
+        $player_node->field_tile5[$node->language][0]['value'] = $player2_tiles[4]->title;
+        $player_node->field_tile6[$node->language][0]['value'] = $player2_tiles[5]->title;
+        $player_node->field_tile7[$node->language][0]['value'] = $player2_tiles[6]->title;
+        node_save($player_node);
+
         return "something may have happened.";
     }
 
