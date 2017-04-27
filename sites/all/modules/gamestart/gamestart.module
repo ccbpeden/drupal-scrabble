@@ -61,5 +61,39 @@
             $node->log = 'This node was programmatically updated on ' . date('c');
             node_save($node);
         }
-    return "You may have updated some values";
+
+        $query_beginning_player_tiles = db_select('node', 'n')
+        ->Fields('N', array('nid'))
+        ->condition('type', 'board_tile');
+        $inplaytiles = [];
+        $inplaynumbers = get_randoms(14);
+        $all_letters = [];
+        $result = $query_beginning_player_tiles->execute();
+
+        foreach($result as $entry) {
+            $node = node_load($entry->nid);
+            $tile_possessor = $node->field_belongs_to[$node->language][0]['value'];
+            array_push($all_letters, $node);
+        }
+
+        for($q = 0; $q < count($inplaynumbers); $q++){
+            $current_random = $inplaynumbers[$q];
+            array_push($inplaytiles, $all_letters[$current_random]);
+        }
+
+    return var_dump($inplaytiles);
     }
+
+function get_randoms($amount) {
+    $inplaynumbers = [];
+    for($i = 1; $i <=99; $i++){
+        if (count($inplaynumbers) < $amount) {
+            $random = rand(0 , 99);
+            if (!in_array($random, $inplaynumbers)) {
+                array_push($inplaynumbers, $random);
+            }
+        } else {
+            return $inplaynumbers;
+        }
+    }
+}
