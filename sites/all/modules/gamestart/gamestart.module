@@ -21,5 +21,31 @@
             $node->log = 'This node was programmatically updated on ' . date('c');
             node_save($node);
         }
+        $query_words = db_select('node', 'n')
+        ->Fields('N', array('nid', 'title'))
+        ->condition('type', 'played_words');
+        $result = $query_words->execute();
+        foreach($result as $word) {
+            $node = node_load($word->nid);
+            node_delete($node->nid);
+        }
+        $query_players = db_select('node', 'n')
+        ->Fields('N', array('nid', 'title'))
+        ->condition('type', 'player');
+        $result = $query_players->execute();
+        foreach($result as $player) {
+            $node = node_load($player->nid);
+            $node->field_score[$node->language][0]['value'] = 0;
+            $node->field_tile1[$node->language][0]['value'] = '';
+            $node->field_tile2[$node->language][0]['value'] = '';
+            $node->field_tile3[$node->language][0]['value'] = '';
+            $node->field_tile4[$node->language][0]['value'] = '';
+            $node->field_tile5[$node->language][0]['value'] = '';
+            $node->field_tile6[$node->language][0]['value'] = '';
+            $node->field_tile7[$node->language][0]['value'] = '';
+            $node->revision = 1;
+            $node->log = 'This node was programmatically updated on ' . date('c');
+            node_save($node);
+        }
     return "You may have updated some values";
     }
