@@ -69,6 +69,8 @@
         $inplaynumbers = get_randoms(14);
         $all_letters = [];
         $result = $query_beginning_player_tiles->execute();
+        $player1_tiles = [];
+        $player2_tiles = [];
 
         foreach($result as $entry) {
             $node = node_load($entry->nid);
@@ -81,19 +83,41 @@
             array_push($inplaytiles, $all_letters[$current_random]);
         }
 
-    return var_dump($inplaytiles);
+        for($s = 0; $s < count($inplaytiles); $s++){
+            if ($s%2 === 0){
+                array_push($player1_tiles, $inplaytiles[$s]);
+            } else {
+                array_push($player2_tiles, $inplaytiles[$s]);
+            }
+        }
+
+        for($i = 0; $i < count($player1_tiles); $i++){
+            $nid = $player1_tiles[$i]->nid;
+            $node = node_load($nid);
+            $node->field_belongs_to['und'][0]['value'] = 'Player 1';
+            $node->field_y_coordinate['und'][0]['value'] = null;
+            node_save($node);
+        }
+        for($j = 0; $j < count($player2_tiles); $j++){
+            $nid = $player2_tiles[$j]->nid;
+            $node = node_load($nid);
+            $node->field_belongs_to['und'][0]['value'] = 'Player 2';
+            $node->field_y_coordinate['und'][0]['value'] = null;
+            node_save($node);
+        }
+        return "something may have happened.";
     }
 
-function get_randoms($amount) {
-    $inplaynumbers = [];
-    for($i = 1; $i <=99; $i++){
-        if (count($inplaynumbers) < $amount) {
-            $random = rand(0 , 99);
-            if (!in_array($random, $inplaynumbers)) {
-                array_push($inplaynumbers, $random);
+    function get_randoms($amount) {
+        $inplaynumbers = [];
+        for($i = 1; $i <=99; $i++){
+            if (count($inplaynumbers) < $amount) {
+                $random = rand(0 , 99);
+                if (!in_array($random, $inplaynumbers)) {
+                    array_push($inplaynumbers, $random);
+                }
+            } else {
+                return $inplaynumbers;
             }
-        } else {
-            return $inplaynumbers;
         }
     }
-}
