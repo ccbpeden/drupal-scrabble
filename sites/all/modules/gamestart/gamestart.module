@@ -10,17 +10,30 @@
     }
 
     function initialize() {
-        $query = db_select('node', 'n')
+        $query_board = db_select('node', 'n')
             ->Fields('N', array('nid', 'title'))
             ->condition('type', 'board');
-        $result = $query->execute();
+        $result = $query_board->execute();
         foreach($result as $record) {
             $node = node_load($record->nid);
             $node->field_played_letter[$node->language][0]['value'] = '';
+            $node->field_current_image = $node->field_default_image;
             $node->revision = 1;
             $node->log = 'This node was programmatically updated on ' . date('c');
             node_save($node);
         }
+
+        $query_play_tiles = db_select('node', 'n')
+            ->Fields('N', array('nid', 'title'))
+            ->condition('type', 'board_tile');
+        $result = $query_play_tiles->execute();
+        foreach($result as $play_tile) {
+            $node = node_load($play_tile->nid);
+            $node->field_belongs_to[$node->language][0]['value'] = '';
+            $node->field_x_coordinate[$node->language][0]['value'] = '';
+            $node->field_y_coordinate[$node->language][0]['value'] = '';
+        }
+
         $query_words = db_select('node', 'n')
         ->Fields('N', array('nid', 'title'))
         ->condition('type', 'played_words');
@@ -29,6 +42,7 @@
             $node = node_load($word->nid);
             node_delete($node->nid);
         }
+
         $query_players = db_select('node', 'n')
         ->Fields('N', array('nid', 'title'))
         ->condition('type', 'player');
