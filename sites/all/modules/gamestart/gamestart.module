@@ -11,7 +11,20 @@
         $items['game_menu'] = array(
             'title' => 'Scrabble Play Menu',
             'page callback' => 'drupal_get_form',
-            'page arguments' => array('play_menu'),
+            'page arguments' => array('play_menu_form'),
+            'access callback' => TRUE,
+            'type' => MENU_CALLBACK,
+        );
+        $items['start_play_page'] = array(
+            'title' => 'Current Turn Menu',
+            'page callback' => 'start_turn',
+            'access callback' => TRUE,
+            'type' => MENU_CALLBACK,
+        );
+        $items['turn_options'] = array(
+            'title' => $_SESSION['current_player']."'s Options",
+            'page callback' => 'turn_options_cb',
+            // 'page arguments' => array('play_menu_form'),
             'access callback' => TRUE,
             'type' => MENU_CALLBACK,
         );
@@ -19,6 +32,8 @@
     }
 
     function initialize() {
+        $_SESSION['current_player'] = null;
+        $_SESSION['game_in_play'] = false;
         $query_board = db_select('node', 'n')
             ->Fields('N', array('nid', 'title'))
             ->condition('type', 'board');
@@ -155,7 +170,7 @@
         }
     }
 
-    function play_menu(){
+    function play_menu_form(){
         // $form[''] = array(
         //   '#title' => '',
         //   '#type' => '',
@@ -164,6 +179,7 @@
         // );
 
         if(isset($_SESSION['current_player'])){
+            // $current_player = 'Player 2';
             $current_player = $_SESSION['current_player'];
 
         } else {
@@ -178,17 +194,46 @@
         return $form;
     }
 
-    function play_menu_submit($form, &$form_state) {
-        if ($_SESSION['current_player'] == 'Player 1') {
-            echo('hi i am player 1');
-            $views_status['player1_tiles'] = TRUE;
-            $views_status['player2_tiles'] = FALSE;
-        } else if ($_SESSION['current_player'] == 'Player 2') {
-            echo('hi i am player 2');
-            $views_status['player1_tiles'] = FALSE;
-            $views_status['player2_tiles'] = TRUE;
-        } else {
-            $views_status['player1_tiles'] = FALSE;
-            $views_status['player2_tiles'] = FALSE;
-        }
+    function play_menu_form_submit($form, &$form_state) {
+        $form_state['redirect'] = 'start_play_page';
     }
+
+    function start_turn() {
+        $player1 = 'playable_tiles_view';
+        $player2 = 'player2_tiles_view';
+        if ($_SESSION['current_player'] == 'Player 1') {
+            $current_view = views_get_view($player1);
+            $current_view->display['player1_tiles']->display_options['enabled'] = TRUE;
+            views_save_view($current_view);
+            $p2_view = views_get_view($player2);
+            $p2_view->display['player2_tiles']->display_options['enabled'] = FALSE;
+            views_save_view($p2_view);
+            $_SESSION['game_in_play'] = true;
+        } else if ($_SESSION['current_player'] == 'Player 2'){
+            $current_view = views_get_view($player1);
+            $current_view->display['player1_tiles']->display_options['enabled'] = FALSE;
+            views_save_view($current_view);
+            $p2_view = views_get_view($player2);
+            $p2_view->display['player2_tiles']->display_options['enabled'] = TRUE;
+            views_save_view($p2_view);
+        } else {
+            $current_view = views_get_view($player1);
+            $current_view->display['player1_tiles']->display_options['enabled'] = FALSE;
+            views_save_view($current_view);
+            $p2_view = views_get_view($player2);
+            $p2_view->display['player2_tiles']->display_options['enabled'] = FALSE;
+            views_save_view($p2_view);
+        }
+
+        drupal_goto('turn_options');
+    }
+
+    function turn_options_cb() {
+        return "and you've gotten this far!";
+    }
+
+    // function gamestart_load($nodes){
+    //     if($_SESSION['game_in_play'] == true){
+    //         var_dump($nodes)
+    //     }
+    // }
