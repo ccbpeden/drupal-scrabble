@@ -1,10 +1,19 @@
 <?php
+    $current_player = 'Player 1';
+
     function gamestart_menu() {
         $items['start_game'] = array(
             'title' => 'Scrabble Game Start',
             'page callback' => 'initialize',
             'access callback' => TRUE,
             'type' => MENU_NORMAL_ITEM,
+        );
+        $items['game_menu'] = array(
+            'title' => 'Scrabble Play Menu',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('play_menu'),
+            'access callback' => TRUE,
+            'type' => MENU_CALLBACK,
         );
         return $items;
     }
@@ -29,9 +38,10 @@
         $result = $query_play_tiles->execute();
         foreach($result as $play_tile) {
             $node = node_load($play_tile->nid);
-            $node->field_belongs_to[$node->language][0]['value'] = '';
+            $node->field_belongs_to[$node->language][0]['value'] = 'none';
             $node->field_x_coordinate[$node->language][0]['value'] = '';
-            $node->field_y_coordinate[$node->language][0]['value'] = '';
+            $node->field_y_coordinate[$node->language][0]['value'] = null;
+            node_save($node);
         }
 
         $query_words = db_select('node', 'n')
@@ -95,7 +105,6 @@
             $nid = $player1_tiles[$i]->nid;
             $node = node_load($nid);
             $node->field_belongs_to['und'][0]['value'] = 'Player 1';
-            $node->field_y_coordinate['und'][0]['value'] = null;
             node_save($node);
 
         }
@@ -115,7 +124,6 @@
             $nid = $player2_tiles[$j]->nid;
             $node = node_load($nid);
             $node->field_belongs_to['und'][0]['value'] = 'Player 2';
-            $node->field_y_coordinate['und'][0]['value'] = null;
             node_save($node);
         }
 
@@ -130,7 +138,7 @@
         $player_node->field_tile7[$node->language][0]['value'] = $player2_tiles[6]->title;
         node_save($player_node);
 
-        return "something may have happened.";
+        drupal_goto('game_menu');
     }
 
     function get_randoms($amount) {
@@ -144,5 +152,43 @@
             } else {
                 return $inplaynumbers;
             }
+        }
+    }
+
+    function play_menu(){
+        // $form[''] = array(
+        //   '#title' => '',
+        //   '#type' => '',
+        //   '#description' => t(''),
+        //
+        // );
+
+        if(isset($_SESSION['current_player'])){
+            $current_player = $_SESSION['current_player'];
+
+        } else {
+            $_SESSION['current_player'] = 'Player 1';
+            $current_player = 'Player 1';
+        }
+
+        $form['submit'] = array(
+          '#type' => 'submit',
+          '#value' => $current_player. " start turn",
+        );
+        return $form;
+    }
+
+    function play_menu_submit($form, &$form_state) {
+        if ($_SESSION['current_player'] == 'Player 1') {
+            echo('hi i am player 1');
+            $views_status['player1_tiles'] = TRUE;
+            $views_status['player2_tiles'] = FALSE;
+        } else if ($_SESSION['current_player'] == 'Player 2') {
+            echo('hi i am player 2');
+            $views_status['player1_tiles'] = FALSE;
+            $views_status['player2_tiles'] = TRUE;
+        } else {
+            $views_status['player1_tiles'] = FALSE;
+            $views_status['player2_tiles'] = FALSE;
         }
     }

@@ -1,8 +1,8 @@
 <?php
 
 function autocreate_player_tiles_menu() {
-    $items['createtiles'] = array(
-        'title' => 'Create Tiles',
+    $items['create_play_tiles'] = array(
+        'title' => 'Create Play Tiles',
         'page callback' => 'tile_generation',
         // 'page arguments' => array($account, $category),
         'access callback' => TRUE,
