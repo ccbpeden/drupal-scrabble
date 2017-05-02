@@ -1,3 +1,31 @@
+<script>
+function place_confirm() {
+    var play = <?php echo json_encode($_SESSION['tile_to_play']->title); ?>;
+    var board = <?php echo json_encode($_SESSION['location_to_play']->title); ?>;
+    var confirm_string = "Do you want to place " + play + " at location "+ board +"?";
+    var place = confirm(confirm_string);
+    document.cookie = "placeresult=" + place+";";
+    console.log(getCookie("placeresult"));
+    return place;
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+</script>
+
 <?php
     $current_player = 'Player 1';
 
@@ -209,6 +237,7 @@
             $p2_view->display['player2_tiles']->display_options['enabled'] = FALSE;
             views_save_view($p2_view);
             $_SESSION['game_in_play'] = true;
+            $_SESSION['first_tile_played'] = false;
         } else if ($_SESSION['current_player'] == 'Player 2'){
             $current_view = views_get_view($player1);
             $current_view->display['player1_tiles']->display_options['enabled'] = FALSE;
@@ -216,6 +245,8 @@
             $p2_view = views_get_view($player2);
             $p2_view->display['player2_tiles']->display_options['enabled'] = TRUE;
             views_save_view($p2_view);
+            $_SESSION['game_in_play'] = true;
+            $_SESSION['first_tile_played'] = false;
         } else {
             $current_view = views_get_view($player1);
             $current_view->display['player1_tiles']->display_options['enabled'] = FALSE;
@@ -232,8 +263,37 @@
         return "and you've gotten this far!";
     }
 
-    // function gamestart_load($nodes){
-    //     if($_SESSION['game_in_play'] == true){
-    //         var_dump($nodes)
-    //     }
-    // }
+    function gamestart_node_view($node) {
+        if($_SESSION['game_in_play'] && $node->type == 'board_tile'){
+            $_SESSION['tile_to_play'] = $node;
+            print($node->title);
+        } else if($_SESSION['game_in_play'] && $node->type == 'board') {
+            $_SESSION['location_to_play'] = $node;
+            print($node->title);
+        }
+        if ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'){
+            $local_location = $_SESSION['location_to_play'];
+            $local_tile = $_SESSION['tile_to_play'];
+            echo '<script type="text/javascript">',
+             'place_confirm();',
+             '</script>';
+            if($_COOKIE['placeresult']){
+                $board_node = node_load($node->nid);
+                $board_node->field_current_image = $local_tile->field_letter_image;
+                $board_node->field_played_letter = $local_tile->title;
+                node_save($board_node);
+                print_r($board_node);
+                // $query_board = db_select('node', 'n')
+                //     ->Fields('N', array('nid', 'title'))
+                //     ->condition('type', 'board');
+                // $result = $query_board->execute();
+                // foreach($result as $record) {
+                //     $node = node_load($record->nid);
+                //     $node->field_current_image = $node->field_default_image;
+                //     $node->revision = 1;
+                //     $node->log = 'This node was programmatically updated on ' . date('c');
+                //     node_save($node);
+                // }
+            };
+        }
+    }
