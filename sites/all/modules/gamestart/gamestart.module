@@ -9,6 +9,11 @@ function place_confirm() {
     return place;
 }
 
+function place_taken() {
+    var taken = alert('This spot is already taken, please choose another!');
+    return taken;
+}
+
 function getCookie(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);
@@ -153,13 +158,13 @@ function getCookie(cname) {
         }
         $player1_nid = 2917;
         $player_node = node_load($player1_nid);
-        $player_node->field_tile1[$node->language][0]['value'] = $player1_tiles[0]->title;
-        $player_node->field_tile2[$node->language][0]['value'] = $player1_tiles[1]->title;
-        $player_node->field_tile3[$node->language][0]['value'] = $player1_tiles[2]->title;
-        $player_node->field_tile4[$node->language][0]['value'] = $player1_tiles[3]->title;
-        $player_node->field_tile5[$node->language][0]['value'] = $player1_tiles[4]->title;
-        $player_node->field_tile6[$node->language][0]['value'] = $player1_tiles[5]->title;
-        $player_node->field_tile7[$node->language][0]['value'] = $player1_tiles[6]->title;
+        $player_node->field_tile1[$node->language][0]['value'] = $player1_tiles[0]->nid;
+        $player_node->field_tile2[$node->language][0]['value'] = $player1_tiles[1]->nid;
+        $player_node->field_tile3[$node->language][0]['value'] = $player1_tiles[2]->nid;
+        $player_node->field_tile4[$node->language][0]['value'] = $player1_tiles[3]->nid;
+        $player_node->field_tile5[$node->language][0]['value'] = $player1_tiles[4]->nid;
+        $player_node->field_tile6[$node->language][0]['value'] = $player1_tiles[5]->nid;
+        $player_node->field_tile7[$node->language][0]['value'] = $player1_tiles[6]->nid;
         node_save($player_node);
 
 
@@ -172,13 +177,13 @@ function getCookie(cname) {
 
         $player2_nid = 2918;
         $player_node = node_load($player2_nid);
-        $player_node->field_tile1[$node->language][0]['value'] = $player2_tiles[0]->title;
-        $player_node->field_tile2[$node->language][0]['value'] = $player2_tiles[1]->title;
-        $player_node->field_tile3[$node->language][0]['value'] = $player2_tiles[2]->title;
-        $player_node->field_tile4[$node->language][0]['value'] = $player2_tiles[3]->title;
-        $player_node->field_tile5[$node->language][0]['value'] = $player2_tiles[4]->title;
-        $player_node->field_tile6[$node->language][0]['value'] = $player2_tiles[5]->title;
-        $player_node->field_tile7[$node->language][0]['value'] = $player2_tiles[6]->title;
+        $player_node->field_tile1[$node->language][0]['value'] = $player2_tiles[0]->nid;
+        $player_node->field_tile2[$node->language][0]['value'] = $player2_tiles[1]->nid;
+        $player_node->field_tile3[$node->language][0]['value'] = $player2_tiles[2]->nid;
+        $player_node->field_tile4[$node->language][0]['value'] = $player2_tiles[3]->nid;
+        $player_node->field_tile5[$node->language][0]['value'] = $player2_tiles[4]->nid;
+        $player_node->field_tile6[$node->language][0]['value'] = $player2_tiles[5]->nid;
+        $player_node->field_tile7[$node->language][0]['value'] = $player2_tiles[6]->nid;
         node_save($player_node);
 
         drupal_goto('game_menu');
@@ -272,28 +277,38 @@ function getCookie(cname) {
             print($node->title);
         }
         if ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'){
-            $local_location = $_SESSION['location_to_play'];
-            $local_tile = $_SESSION['tile_to_play'];
-            echo '<script type="text/javascript">',
-             'place_confirm();',
-             '</script>';
-            if($_COOKIE['placeresult']){
-                $board_node = node_load($node->nid);
-                $board_node->field_current_image = $local_tile->field_letter_image;
-                $board_node->field_played_letter = $local_tile->title;
-                node_save($board_node);
-                print_r($board_node);
-                // $query_board = db_select('node', 'n')
-                //     ->Fields('N', array('nid', 'title'))
-                //     ->condition('type', 'board');
-                // $result = $query_board->execute();
-                // foreach($result as $record) {
-                //     $node = node_load($record->nid);
-                //     $node->field_current_image = $node->field_default_image;
-                //     $node->revision = 1;
-                //     $node->log = 'This node was programmatically updated on ' . date('c');
-                //     node_save($node);
-                // }
-            };
+                $local_location = node_load($_SESSION['location_to_play']->nid);
+                if ($local_location->field_played_letter['und'][0]['value']=='') {
+                print_r($local_location->field_played_letter['und'][0]['value']);
+                $local_tile = $_SESSION['tile_to_play'];
+                $local_location->field_played_letter['und'][0]['value'] = $local_tile->title;
+                node_save($local_location);
+                echo '<script type="text/javascript">',
+                'place_confirm();',
+                '</script>';
+                if($_COOKIE['placeresult']){
+                    $board_node = node_load($node->nid);
+                    $board_node->field_current_image = $local_tile->field_letter_image;
+                    $board_node->field_played_letter = $local_tile->title;
+                    node_save($board_node);
+                    // print_r($board_node);
+                    $play_node = node_load($local_tile->nid);
+                    $play_node->field_x_coordinate = $board_node->field_board_x_coordinate;
+                    $play_node->field_y_coordinate = $board_node->field_board_y_coordinate;
+                    $play_node->field_belongs_to = 'played';
+                    node_save($play_node);
+                    // $player_node = node_load($_SESSION['current_player']->nid);
+                    // for ($i = 1; $i <= 7; $i++) {
+                    //     if ($player_node->field_tile.$i == $local_tile->nid) {
+                    //         $player_node->field_tile.$i = '';
+                    //     }
+                    // }
+                };
+
+            } else {
+                echo '<script type="text/javascript">',
+                'place_taken();',
+                '</script>';
+            }
         }
     }
