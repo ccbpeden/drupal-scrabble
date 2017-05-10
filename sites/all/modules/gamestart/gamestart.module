@@ -1,7 +1,7 @@
 <script>
 function place_confirm() {
-    var play = <?php echo json_encode($_SESSION['tile_to_play']->title); ?>;
-    var board = <?php echo json_encode($_SESSION['location_to_play']->title); ?>;
+    var play = <?php echo json_encode($_SESSION['tile_to_play_title']); ?>;
+    var board = <?php echo json_encode($_SESSION['location_to_play_title']); ?>;
     var confirm_string = "Do you want to place " + play + " at location "+ board +"?";
     var place = confirm(confirm_string);
     document.cookie = "placeresult=" + place+";";
@@ -64,6 +64,12 @@ function getCookie(cname) {
     }
 
     function initialize() {
+      $current_view = views_get_view('playable_tiles_view');
+      $current_view->display['player1_tiles']->display_options['enabled'] = FALSE;
+      views_save_view($current_view);
+      $current_view = views_get_view('player2_tiles_view');
+      $current_view->display['player2_tiles']->display_options['enabled'] = FALSE;
+      views_save_view($current_view);
         $_SESSION['current_player'] = null;
         $_SESSION['tile_to_play'] = null;
         $_SESSION['location_to_play'] = null;
@@ -277,6 +283,8 @@ function getCookie(cname) {
                 $local_tile = $_SESSION['tile_to_play'];
                 $local_location->field_played_letter['und'][0]['value'] = $local_tile->title;
                 node_save($local_location);
+                $_SESSION['tile_to_play_title'] = $local_tile->title;
+                $_SESSION['location_to_play_title'] = $local_location->title;
                 echo '<script type="text/javascript">',
                 'place_confirm();',
                 '</script>';
