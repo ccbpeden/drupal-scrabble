@@ -47,6 +47,13 @@
           'access callback' => TRUE,
           'type' => MENU_CALLBACK,
         );
+        $items['claim_word'] = array(
+          'title' => "Claim a Word",
+          'page callback' => 'drupal_get_form',
+          'page arguments' => array('claim_word_form'),
+          'access callback' => TRUE,
+          'type' => MENU_CALLBACK,
+        );
         return $items;
     }
 
@@ -61,6 +68,7 @@
         $_SESSION['tile_to_play'] = null;
         $_SESSION['location_to_play'] = null;
         $_SESSION['game_in_play'] = false;
+        $_SESSION['first_tile_played'] = false;
         $query_board = db_select('node', 'n')
             ->Fields('N', array('nid', 'title'))
             ->condition('type', 'board');
@@ -264,7 +272,8 @@
                node_save($_SESSION['current_player']);
                break;
            }
-           drupal_goto('turn_options');
+           $_SESSION['first_tile_played'] = true;
+           drupal_goto('place_tiles');
        }
 
       } else {
@@ -382,13 +391,49 @@
             $_SESSION['current_player'] = node_load(2918);
           }
           $_SESSION['game_in_play'] = FALSE;
+          $_SESSION['first_tile_played'] = false;
           drupal_goto('game_menu');
         }
       }
     }
 
     function check_place_tiles() {
-      return 'this works';
+      $form['desc'] = array(
+        '#title' => 'Place some tiles on the board and when you are ready, claim your word! If you are not wanting to save your placed tiles, hit "end turn".',
+        '#type' => 'item',
+      );
+      $form['claim_submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Claim Your Word',
+        '#submit' => array('claim_submit'),
+      );
+      if (!$_SESSION['first_tile_played']) {
+        $form['desc2'] = array(
+          '#title' => 'End your turn without playing any tiles',
+          '#type' => 'item',
+        );
+        $form['play_submit'] = array(
+          '#type' => 'submit',
+          '#value' => 'End Turn',
+          '#submit' => array('end_turn_submit'),
+        );
+      }
+      return $form;
+    }
+
+    function claim_submit(&$form, &$form_state) {
+      drupal_goto('claim_word');
+    }
+
+    function claim_word_form() {
+      $form['desc'] = array(
+
+      );
+      return $form;
+    }
+
+    function claim_word_form_submit(&$form, &$form_state) {
+      drupal_goto('start_play_page');
     }
 
     function gamestart_node_view($node) {
