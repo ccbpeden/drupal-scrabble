@@ -291,7 +291,7 @@ function getCookie(cname) {
                 if($_COOKIE['placeresult']){
                     $board_node = node_load($node->nid);
                     $board_node->field_current_image = $local_tile->field_letter_image;
-                    $board_node->field_played_letter = $local_tile->title;
+                    $board_node->field_played_letter['und'][0]['value'] = $local_tile->title;
                     node_save($board_node);
                     $play_node = node_load($local_tile->nid);
                     $play_node->field_x_coordinate = $board_node->field_board_x_coordinate;
@@ -299,28 +299,15 @@ function getCookie(cname) {
                     $play_node->field_belongs_to['und'][0]['value'] = 'played';
                     node_save($play_node);
                     $player_node = node_load($_SESSION['current_player']);
-                    if ($player_node->field_tile1[$player_node->language][0]['value'] == $local_tile->nid) {
-                        $player_node->field_tile1[$player_node->language][0]['value'] = '';
-                        node_save($player_node);
-                    } else if ($player_node->field_tile2[$player_node->language][0]['value'] == $local_tile->nid) {
-                        $player_node->field_tile2[$player_node->language][0]['value'] = '';
-                        node_save($player_node);
-                    } else if ($player_node->field_tile3[$player_node->language][0]['value'] == $local_tile->nid) {
-                        $player_node->field_tile3[$player_node->language][0]['value'] = '';
-                        node_save($player_node);
-                    } else if ($player_node->field_tile4[$player_node->language][0]['value'] == $local_tile->nid) {
-                        $player_node->field_tile4[$player_node->language][0]['value'] = '';
-                        node_save($player_node);
-                    } else if ($player_node->field_tile5[$player_node->language][0]['value'] == $local_tile->nid) {
-                        $player_node->field_tile5[$player_node->language][0]['value'] = '';
-                        node_save($player_node);
-                    } else if ($player_node->field_tile6[$player_node->language][0]['value'] == $local_tile->nid) {
-                        $player_node->field_tile6[$player_node->language][0]['value'] = '';
-                        node_save($player_node);
-                    } else if ($player_node->field_tile7[$player_node->language][0]['value'] == $local_tile->nid) {
-                        $player_node->field_tile7[$player_node->language][0]['value'] = '';
-                        node_save($player_node);
-                    }
+                    for ($i = 1; $i <= 7; $i++) {
+                     $field_name = 'field_tile' . $i;
+                     if ($player_node->$field_name['und'][0]['value'] == $play_node->nid) {
+                         $player_node->$field_name['und'][0]['value'] = null;
+                         node_save($player_node);
+                         break;
+                     }
+                 }
+
                 };
 
             } else {
