@@ -1,3 +1,5 @@
+
+
 <script>
 function place_confirm() {
     var play = <?php echo json_encode($_SESSION['tile_to_play_title']); ?>;
@@ -281,14 +283,13 @@ function getCookie(cname) {
                 $local_location = node_load($_SESSION['location_to_play']->nid);
                 if ($local_location->field_played_letter['und'][0]['value']=='') {
                 $local_tile = $_SESSION['tile_to_play'];
-                $local_location->field_played_letter['und'][0]['value'] = $local_tile->title;
                 node_save($local_location);
                 $_SESSION['tile_to_play_title'] = $local_tile->title;
                 $_SESSION['location_to_play_title'] = $local_location->title;
                 echo '<script type="text/javascript">',
                 'place_confirm();',
                 '</script>';
-                if($_COOKIE['placeresult']){
+                if($_COOKIE['placeresult'] === TRUE){
                     $board_node = node_load($node->nid);
                     $board_node->field_current_image = $local_tile->field_letter_image;
                     $board_node->field_played_letter['und'][0]['value'] = $local_tile->title;
