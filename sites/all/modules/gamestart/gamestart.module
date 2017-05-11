@@ -49,18 +49,17 @@
         );
         $items['claim_word'] = array(
           'title' => "Claim a Word",
-          'page callback' => 'drupal_get_form',
-          'page arguments' => array('claim_word_form'),
+          'page callback' => 'claim_word_ajax',
           'access callback' => TRUE,
           'type' => MENU_CALLBACK,
         );
-        $items['select_claimed_word'] = array(
-          'title' => "Claim a Word",
-          'page callback' => 'drupal_get_form',
-          'page arguments' => array('select_claimed_word_form'),
-          'access callback' => TRUE,
-          'type' => MENU_CALLBACK,
-        );
+        // $items['select_claimed_word'] = array(
+        //   'title' => "Claim a Word",
+        //   'page callback' => 'drupal_get_form',
+        //   'page arguments' => array('select_claimed_word_form'),
+        //   'access callback' => TRUE,
+        //   'type' => MENU_CALLBACK,
+        // );
         return $items;
     }
     //Game initialization function that runs on "game start" to reset board, players, and play tiles
@@ -345,22 +344,15 @@
     }
 
     function claim_submit(&$form, &$form_state) {
+      $_SESSION['claim_word_active'] = true;
       drupal_goto('claim_word');
     }
 
-    function claim_word_form() {
-      $_SESSION['claim_word_active'] = true;
-      $form['desc'] = array(
-        '#title' => 'Click on the first letter you wish to claim',
-        '#type' => 'item',
-      );
+    function claim_word_ajax() {
 
-      return $form;
+      return '<p>Click on the first letter you wish to claim!</p>';
     }
 
-    function claim_word_form_submit(&$form, &$form_state) {
-      drupal_goto('start_play_page');
-    }
 
     //Checks that a player wants to place a tile at a particular location, using a form with yes or no options
     function play_confirm_form(){
@@ -416,7 +408,7 @@
     }
 
     //Function to check letters contained in possible claimed word
-    function select_claimed_word_form(){
+    function select_claimed_word_function(){
         $horizontal_poss = array();
         $vertical_poss = array();
         $locationx = $_SESSION['location_to_play']->field_board_x_coordinate['und'][0]['value'];
@@ -439,7 +431,29 @@
             }
 
         }
+        foreach(range($locationy, 15) as $j){
+          $query_word = new EntityFieldQuery();
+          $query_word->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'board')
+          ->propertyCondition('status', NODE_PUBLISHED)
+          ->FieldCondition('field_board_x_coordinate', 'value', $j, '=')
+          ->FieldCondition('field_board_y_coordinate', 'value', $locationx, '=');
+          $result = $query_word->execute();
+          echo '<pre>';
+                var_dump($result);
+                '</pre>';
+                exit;
+            $location_nid = array_keys($result['node']);
+            $lettertitle = entity_load('node', $location_nid);
+            foreach($lettertitle as $letter) {
+              if($letter->field_played_letter['und'][0]['value'] != ''){
+                array_push($vertical_poss, $letter->field_played_letter['und'][0]['value']);
+              } else {
+              }
+            }
+        }
         print_r($horizontal_poss);
+        print_r($vertical_poss);
     }
 
     function select_claimed_word_form_submit(&$form, &$form_state){
@@ -494,7 +508,7 @@
                     $_SESSION['location_to_play_title'] = $_SESSION['location_to_play']->title;
                     drupal_goto('confirm_play');
         } elseif ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'  && $_SESSION['claim_word_active'] == true){
-          drupal_goto('select_claimed_word');
+          select_claimed_word_function();
         }
     }
 
