@@ -481,7 +481,6 @@
             foreach($letterlocations as $location) {
               if($location->field_played_letter['und'][0]['value'] != ''){
                 array_push($vertical_poss, $location->field_played_letter['und'][0]['value']);
-                print($location->field_played_letter['und'][0]['value'].' the letter  ');
                 //Find the score of the tile location on board
                 if($location->field_multiple_target['und'][0]['value'] == 'word'){
                   $vertical_word_bonus *= (int)$location->field_multiple_value['und'][0]['value'];
@@ -491,10 +490,8 @@
                 } else {
                   $temp_letter_multiple = 1;
                 }
-                print($temp_letter_multiple.'  the letter multiple ');
                 //Find the score of the letters of the word
                 $letter_score_value = play_score($location->field_played_letter['und'][0]['value']) * $temp_letter_multiple;
-                $temp_letter_multiple = 1;
                 array_push($vertical_word_letter_points, $letter_score_value);
               } else {
                 break;
@@ -504,14 +501,6 @@
 
             }
         }
-        print_r($horizontal_poss);
-        print(' and word multiple '.$horizontal_word_bonus. 'and total plain score  ');
-        print(array_sum($horizontal_word_letter_points) . ' and total score ');
-        print_r($horizontal_total_score);
-        print_r($vertical_poss);
-        print(' and word multiple '.$vertical_word_bonus. 'and total plain score  ');
-        print(array_sum($vertical_word_letter_points) . ' and total score ');
-        print_r($vertical_total_score);
 
         $_SESSION['horizontal_word'] = implode('', $horizontal_poss);
         $_SESSION['vertical_word'] = implode('', $vertical_poss);
@@ -536,7 +525,34 @@
     }
 
     function select_claimed_word_form_submit(&$form, &$form_state){
-        return;
+        if($form_state['values']['word_options'] == 0){
+          $_SESSION['current_player']->field_score['und'][0]['value'] += $_SESSION['vertical_total_score'];
+          node_save($_SESSION['current_player']);
+          $word = $_SESSION['vertical_word'];
+          $orientation = 'vertical';
+          $score = $_SESSION['vertical_total_score'];
+        } else {
+          $_SESSION['current_player']->field_score['und'][0]['value'] += $_SESSION['horizontal_total_score'];
+          $word = $_SESSION['horizontal_word'];
+          node_save($_SESSION['current_player']);
+          $orientation = 'horizontal';
+          $score = $_SESSION['horizontal_total_score'];
+        }
+        $node = new stdClass();
+        $node->type = 'played_words';
+        node_object_prepare($node);
+        $node->language = LANGUAGE_NONE;
+        $node->title = $word;
+        $node->field_player = $_SESSION['current_player']->title;
+        $node->field_word_score_value['und'][0]['value'] = $score;
+        $node->field_orientation['und'][0]['value'] = $orientation;
+        node_save($node);
+        $_SESSION['vertical_word'] = null;
+        $_SESSION['horizontal_word'] = null;
+        $_SESSION['vertical_total_score'] = null;
+        $_SESSION['horizontal_total_score'] = null;
+        $_SESSION['claim_word_active'] = false;
+        drupal_goto('claim_word');
     }
 
     //Switch tiles view depending on which player is playing, starts individual player's turn by clearing the 'first tile played'
