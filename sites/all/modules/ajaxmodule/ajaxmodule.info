@@ -1,0 +1,5 @@
+name = Ajax Module for Tiles
+description = Display playable tiles details using Ajax
+package = Custom Modules
+core = 7.x
+files[] = ajaxmodule.module
