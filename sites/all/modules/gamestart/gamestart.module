@@ -121,31 +121,23 @@
         foreach($result as $player) {
             $node = node_load($player->nid);
             $node->field_score[$node->language][0]['value'] = 0;
-            $node->field_tile1[$node->language][0]['value'] = '';
-            $node->field_tile2[$node->language][0]['value'] = '';
-            $node->field_tile3[$node->language][0]['value'] = '';
-            $node->field_tile4[$node->language][0]['value'] = '';
-            $node->field_tile5[$node->language][0]['value'] = '';
-            $node->field_tile6[$node->language][0]['value'] = '';
-            $node->field_tile7[$node->language][0]['value'] = '';
             $node->revision = 1;
             $node->log = 'This node was programmatically updated on ' . date('c');
             node_save($node);
         }
         //Randomly draws 14 tiles and assigns them to players 1 and 2
+        $inplaytiles = [];
+        $inplaynumbers = get_randoms(14);
+        $player1_tiles = [];
+        $player2_tiles = [];
+        $all_letters = [];
+
         $query_beginning_player_tiles = db_select('node', 'n')
         ->Fields('N', array('nid'))
         ->condition('type', 'board_tile');
         $result = $query_beginning_player_tiles->execute();
-        $inplaytiles = [];
-        $inplaynumbers = get_randoms(14);
-        $all_letters = [];
-        $player1_tiles = [];
-        $player2_tiles = [];
-
         foreach($result as $entry) {
             $node = node_load($entry->nid);
-            $tile_possessor = $node->field_belongs_to[$node->language][0]['value'];
             array_push($all_letters, $node);
         }
 
@@ -171,7 +163,6 @@
         }
         $player1_nid = 2917;
         $player_node = node_load($player1_nid);
-        // draw_player_tiles(7, $all_letters, $player_node);
         $player_node->field_tile1[$node->language][0]['value'] = $player1_tiles[0]->nid;
         $player_node->field_tile2[$node->language][0]['value'] = $player1_tiles[1]->nid;
         $player_node->field_tile3[$node->language][0]['value'] = $player1_tiles[2]->nid;
@@ -191,7 +182,6 @@
 
         $player2_nid = 2918;
         $player_node = node_load($player2_nid);
-        // draw_player_tiles(7, $all_letters, $player_node);
         $player_node->field_tile1[$node->language][0]['value'] = $player2_tiles[0]->nid;
         $player_node->field_tile2[$node->language][0]['value'] = $player2_tiles[1]->nid;
         $player_node->field_tile3[$node->language][0]['value'] = $player2_tiles[2]->nid;
@@ -224,24 +214,6 @@
             }
         }
     }
-
-    //Function to draw tiles as needed and assign to players
-    // function draw_player_tiles($empty_tile_slot_count, $returned_play_tiles, $player_node) {
-      // $returned_randoms = get_randoms($empty_tile_slot_count);
-      // print_r($player_node);
-      // for ($i = 1; $i <= 7; $i++) {
-      //  $field_name = 'field_tile' . $i;
-      //  if ($player_node->$field_name['und'][0]['value'] == '') {
-      //    for ($j = 0; $j < count($returned_randoms); $j++) {
-      //      $player_node->$field_name['und'][0]['value'] = $returned_play_tiles[$returned_randoms[$j]]->nid;
-      //      $tile_to_save = node_load($returned_play_tiles[$returned_randoms[$j]]->nid);
-      //      $tile_to_save->field_belongs_to['und'][0]['value'] = $player_node->title;
-      //      node_save($tile_to_save);
-      //    }
-      //  }
-      //  node_save($player_node);
-      // }
-    // }
 
     //Starts a player's turn with a form displaying start button
     function play_menu_form(){

@@ -8,6 +8,7 @@ Drupal Scrabble game with player and board tiles. Players receive letter tiles a
 _To view and use this application:_
 * It is necessary to download and install MAMP to use this application
     * Go to [mamp.info] (https://www.mamp.info/en/downloads/) to download MAMP for free. Set your Apache port to 8888 and mySQL port to 8889, and launch the server from the project directory.
+    * This project must be run using PHP 7.0.0 (NOT 5.2.4 or below!)
 * Clone this git repository: https://github.com/ericaw21/Drupal-scrabble
 * Inside of the **_db-backup_** folder, unzip the **_scrabble.sql.zip_** file
 * Open MAMP (or equivalent) and click on preferences/ports.
@@ -25,6 +26,7 @@ _To view and use this application:_
 
 ## Technologies Used
 * Drupal
+* PHP
 * mySQL
 * HTML
 * CSS
