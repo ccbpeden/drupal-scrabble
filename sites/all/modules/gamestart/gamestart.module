@@ -218,12 +218,13 @@
     function play_menu_form(){
 
         if(!isset($_SESSION['current_player'])){
-            $_SESSION['current_player'] = node_load(2917);
+            $_SESSION['current_player'] = 2917;
         }
+        $current_player = node_load($_SESSION['current_player']);
 
         $form['submit'] = array(
           '#type' => 'submit',
-          '#value' => $_SESSION['current_player']->title . " start turn",
+          '#value' => $current_player->title . " start turn",
         );
         return $form;
     }
@@ -275,6 +276,7 @@
 
     //Ends player turn by refilling hand with tiles and switching to the next player and player tiles view
     function end_turn_submit(&$form, &$form_state) {
+        $current_player = node_load($_SESSION['current_player']);
           $query_all_play_tiles = db_select('node', 'n')
           ->Fields('N', array('nid'))
           ->condition('type', 'board_tile');
@@ -282,21 +284,21 @@
           $empty_tile_slot_count = 0;
           for ($i = 1; $i <= 7; $i++) {
            $field_name = 'field_tile' . $i;
-           if ($_SESSION['current_player']->$field_name['und'][0]['value'] == '') {
+           if ($current_player->$field_name['und'][0]['value'] == '') {
                $empty_tile_slot_count++;
            }
            $returned_randoms = get_randoms($empty_tile_slot_count);
            for ($i = 1; $i <= 7; $i++) {
             $field_name = 'field_tile' . $i;
-            if ($_SESSION['current_player']->$field_name['und'][0]['value'] == '') {
+            if ($current_player->$field_name['und'][0]['value'] == '') {
               for ($j = 0; $j < count($returned_randoms); $j++) {
-                $_SESSION['current_player']->$field_name['und'][0]['value'] = $returned_play_tiles[$returned_randoms[$j]]->nid;
+                $current_player->$field_name['und'][0]['value'] = $returned_play_tiles[$returned_randoms[$j]]->nid;
                 $tile_to_save = node_load($returned_play_tiles[$returned_randoms[$j]]->nid);
                 $tile_to_save->field_belongs_to['und'][0]['value'] = $_SESSION['current_player']->title;
                 node_save($tile_to_save);
               }
             }
-            node_save($_SESSION['current_player']);
+            node_save($current_player);
           }
           $player1 = 'playable_tiles_view';
           $player2 = 'player2_tiles_view';
@@ -306,11 +308,11 @@
           $p2_view = views_get_view($player2);
           $p2_view->display['player2_tiles']->display_options['enabled'] = FALSE;
           views_save_view($p2_view);
-          if ($_SESSION['current_player']->nid == 2918) {
+          if ($_SESSION['current_player'] == 2918) {
 
-            $_SESSION['current_player'] = node_load(2917);
+            $_SESSION['current_player'] = 2917;
           } else {
-            $_SESSION['current_player'] = node_load(2918);
+            $_SESSION['current_player'] = 2918;
           }
           $_SESSION['game_in_play'] = FALSE;
           $_SESSION['first_tile_played'] = false;
@@ -358,10 +360,12 @@
     //Checks that a player wants to place a tile at a particular location, using a form with yes or no options
     function play_confirm_form(){
 
-        if(isset($_SESSION['current_player'])  && $_SESSION['tile_to_play_title'] && $_SESSION['location_to_play_title']){
+        if(isset($_SESSION['current_player'])  && $_SESSION['tile_to_play'] && $_SESSION['location_to_play']){
+          $tile_to_play = node_load($_SESSION['tile_to_play']);
+          $location_to_play = node_load($_SESSION['location_to_play']);
           $form['desc'] = array(
               '#type' => 'item',
-              '#title' => 'Do you want to play '.$_SESSION['tile_to_play_title'].' at location '.$_SESSION['location_to_play_title'],
+              '#title' => 'Do you want to play '.$tile_to_play->title.' at location '.$location_to_play->title,
           );
         $form['submit_cancel'] = array(
           '#type' => 'submit',
@@ -384,19 +388,22 @@
     }
 
     function play_confirm_form_accept_submit(&$form, &$form_state){
-      if($_SESSION['location_to_play']->field_played_letter['und'][0]['value'] === ''){
-          $_SESSION['location_to_play']->field_current_image = $_SESSION['tile_to_play']->field_letter_image;
-          $_SESSION['location_to_play']->field_played_letter['und'][0]['value'] = $_SESSION['tile_to_play']->title;
-          node_save($_SESSION['location_to_play']);
-          $_SESSION['tile_to_play']->field_x_coordinate = $_SESSION['location_to_play']->field_board_x_coordinate;
-          $_SESSION['tile_to_play']->field_y_coordinate = $_SESSION['location_to_play']->field_board_y_coordinate;
-          $_SESSION['tile_to_play']->field_belongs_to['und'][0]['value'] = 'played';
-          node_save($_SESSION['tile_to_play']);
+      $current_player = node_load($_SESSION['current_player']);
+      $tile_to_play = node_load($_SESSION['tile_to_play']);
+      $location_to_play = node_load($_SESSION['location_to_play']);
+      if($location_to_play->field_played_letter['und'][0]['value'] === ''){
+          $location_to_play->field_current_image = $tile_to_play->field_letter_image;
+          $location_to_play->field_played_letter['und'][0]['value'] = $tile_to_play->title;
+          node_save($location_to_play);
+          $tile_to_play->field_x_coordinate = $location_to_play->field_board_x_coordinate;
+          $tile_to_play->field_y_coordinate = $location_to_play->field_board_y_coordinate;
+          $tile_to_play->field_belongs_to['und'][0]['value'] = 'played';
+          node_save($tile_to_play);
           for ($i = 1; $i <= 7; $i++) {
            $field_name = 'field_tile' . $i;
-           if ($_SESSION['current_player']->$field_name['und'][0]['value'] == $_SESSION['tile_to_play']->nid) {
-               $_SESSION['current_player']->$field_name['und'][0]['value'] = null;
-               node_save($_SESSION['current_player']);
+           if ($current_player->$field_name['und'][0]['value'] == $tile_to_play->nid) {
+               $current_player->$field_name['und'][0]['value'] = null;
+               node_save($current_player);
                break;
            }
            $_SESSION['first_tile_played'] = true;
@@ -430,8 +437,9 @@
         $vertical_word_bonus = 1;
         $vertical_word_letter_points = array();
         $vertical_total_score;
-        $locationx = $_SESSION['location_to_play']->field_board_x_coordinate['und'][0]['value'];
-        $locationy = (int)$_SESSION['location_to_play']->field_board_y_coordinate['und'][0]['value'];
+        $location_to_play = node_load($_SESSION['location_to_play']);
+        $locationx = $location_to_play->field_board_x_coordinate['und'][0]['value'];
+        $locationy = (int)$location_to_play->field_board_y_coordinate['und'][0]['value'];
         foreach(range($locationx, 'O') as $i){
           $query_word = new EntityFieldQuery();
           $query_word->entityCondition('entity_type', 'node')
@@ -525,16 +533,17 @@
     }
 
     function select_claimed_word_form_submit(&$form, &$form_state){
+      $current_player = node_load($_SESSION['current_player']);
         if($form_state['values']['word_options'] == 0){
-          $_SESSION['current_player']->field_score['und'][0]['value'] += $_SESSION['vertical_total_score'];
-          node_save($_SESSION['current_player']);
+          $current_player->field_score['und'][0]['value'] += $_SESSION['vertical_total_score'];
+          node_save($current_player);
           $word = $_SESSION['vertical_word'];
           $orientation = 'vertical';
           $score = $_SESSION['vertical_total_score'];
         } else {
-          $_SESSION['current_player']->field_score['und'][0]['value'] += $_SESSION['horizontal_total_score'];
+          $current_player->field_score['und'][0]['value'] += $_SESSION['horizontal_total_score'];
           $word = $_SESSION['horizontal_word'];
-          node_save($_SESSION['current_player']);
+          node_save($current_player);
           $orientation = 'horizontal';
           $score = $_SESSION['horizontal_total_score'];
         }
@@ -543,7 +552,7 @@
         node_object_prepare($node);
         $node->language = LANGUAGE_NONE;
         $node->title = $word;
-        $node->field_player = $_SESSION['current_player']->title;
+        $node->field_player = $current_player->title;
         $node->field_word_score_value['und'][0]['value'] = $score;
         $node->field_orientation['und'][0]['value'] = $orientation;
         node_save($node);
@@ -559,7 +568,7 @@
     function start_turn() {
         $player1 = 'playable_tiles_view';
         $player2 = 'player2_tiles_view';
-        if ($_SESSION['current_player']->nid == 2917) {
+        if ($_SESSION['current_player'] == 2917) {
             $current_view = views_get_view($player1);
             $current_view->display['player1_tiles']->display_options['enabled'] = TRUE;
             views_save_view($current_view);
@@ -567,7 +576,7 @@
             $p2_view->display['player2_tiles']->display_options['enabled'] = FALSE;
             views_save_view($p2_view);
             $_SESSION['first_tile_played'] = false;
-        } else if ($_SESSION['current_player']->nid == 2918){
+        } else if ($_SESSION['current_player'] == 2918){
             $current_view = views_get_view($player1);
             $current_view->display['player1_tiles']->display_options['enabled'] = FALSE;
             views_save_view($current_view);
@@ -590,13 +599,11 @@
     //Assigns session variables depending on whether player has clicked on play tiles or board tiles and redirects to actions
     function gamestart_node_view($node) {
         if($_SESSION['game_in_play'] && $node->type == 'board_tile'){
-            $_SESSION['tile_to_play'] = $node;
+            $_SESSION['tile_to_play'] = $node->nid;
         } else if($_SESSION['game_in_play'] && $node->type == 'board') {
-            $_SESSION['location_to_play'] = $node;
+            $_SESSION['location_to_play'] = $node->nid;
         }
         if ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'  && $_SESSION['claim_word_active'] == false){
-                    $_SESSION['tile_to_play_title'] = $_SESSION['tile_to_play']->title;
-                    $_SESSION['location_to_play_title'] = $_SESSION['location_to_play']->title;
                     drupal_goto('confirm_play');
         } elseif ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'  && $_SESSION['claim_word_active'] == true){
           select_claimed_word_function();
