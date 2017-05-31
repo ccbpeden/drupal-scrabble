@@ -375,7 +375,7 @@
         $form['submit_accept'] = array(
           '#type' => 'submit',
           '#value' => 'yes',
-          '#submit' => array('play_confirm_form_accept_submit'),
+          '#submit' => array('place_tile'),
         );
         return $form;
       }
@@ -387,7 +387,11 @@
         drupal_goto('turn_options');
     }
 
-    function play_confirm_form_accept_submit(&$form, &$form_state){
+    // function play_confirm_form_accept_submit(&$form, &$form_state){
+    //   place_tile();
+    // }
+
+    function place_tile(){
       $current_player = node_load($_SESSION['current_player']);
       $tile_to_play = node_load($_SESSION['tile_to_play']);
       $location_to_play = node_load($_SESSION['location_to_play']);
@@ -407,6 +411,8 @@
                break;
            }
            $_SESSION['first_tile_played'] = true;
+           $_SESSION['tile_to_play'] = null;
+           $_SESSION['location_to_play'] = null;
            drupal_goto('place_tiles');
        }
 
@@ -600,11 +606,13 @@
     function gamestart_node_view($node) {
         if($_SESSION['game_in_play'] && $node->type == 'board_tile'){
             $_SESSION['tile_to_play'] = $node->nid;
-        } else if($_SESSION['game_in_play'] && $node->type == 'board') {
+        } elseif ($_SESSION['game_in_play'] && $node->type == 'board') {
             $_SESSION['location_to_play'] = $node->nid;
         }
-        if ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'  && $_SESSION['claim_word_active'] == false){
-                    drupal_goto('confirm_play');
+        if ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'  && $_SESSION['claim_word_active'] == false && $_SESSION['first_tile_played'] == false){
+          drupal_goto('confirm_play');
+        } elseif ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'  && $_SESSION['claim_word_active'] == false && $_SESSION['first_tile_played'] == true) {
+          place_tile();
         } elseif ($_SESSION['game_in_play'] && $_SESSION['tile_to_play'] && $_SESSION['location_to_play'] && $node->type == 'board'  && $_SESSION['claim_word_active'] == true){
           select_claimed_word_function();
         }
